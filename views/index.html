@@ -1,0 +1,29 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+  </head>
+  <body>
+    {{if .loggedIn}}
+    <form action="/add">
+      URL: <br>
+      <input type="url" name="url">
+      <input type="submit" value="Submit">
+    </form>
+    {{end}}
+
+    <h1>Comparitive Class Statistics</h1>
+    {{range $index, $element := .classes}}
+    <a class="pure-button" href="/draw?class={{$index}}">{{$element}}</a>&nbsp;
+    {{end}}
+
+    <h1>Individual player stats</h1>
+    A bit messy but still works who cares<br>
+
+    {{range $index, $element := .players}}
+    <a class="pure-button" href="/draw?playerid={{$element.ID}}">{{$element.Name}}</a>&nbsp;
+    {{end}}
+
+    <br><br>
+    <a href="https://github.com/vibhavp/tf2-stats">Github Source</a>
+  </body>
+</html>

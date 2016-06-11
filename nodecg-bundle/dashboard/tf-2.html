@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <form name="classForm">
+    <h5>Class</h5>
+    <select name="className">
+      <option value="scout"Scout></option>
+      <option value="soldier">Soldier</option>
+      <option value="demoman">Demo</option>
+      <option value="sniper">Sniper</option>
+      <option value="medic">Medic</option>
+      <option value="heavyweapons">Heavy</option>
+      <option value="pyro">Pyro</option>
+      <option value="engineer">Engi</option>
+      <option value="spy">Spy</option>
+    </select>
+  </form>
+    <h5>Player ID</h5>
+    <form name="playerForm" action="#">
+      <input type="number" name="playerID">
+      <input type="submit" name="submit" action="#">
+    </form>
+    <h5>Endpoint (incl http)</h5>
+    <form name="endpointForm" action="#">
+      <input type="url" name="endpoint">
+      <input type="submit" name="submit" action="#">
+    </form>
+  <script>
+    var classForm = document.classForm;
+    var playerForm = document.playerForm;
+    var endpointForm = document.endpointForm;
+
+    classForm.className.addEventListener('change', function() {
+    console.log(classForm.className.value)
+    nodecg.Replicant('class').value = classForm.className.value;
+    });
+
+    playerForm.onsubmit = function() {
+    console.log(playerForm.playerID.value)
+    nodecg.Replicant('playerID').value = playerForm.playerID.value
+    }
+
+    endpointForm.onsubmit = function() {
+    console.log(playerForm.playerID.value)
+    nodecg.Replicant('endpoint').value = endpointForm.endpoint.value
+    }
+
+  </script>
+</body>
+</html>
