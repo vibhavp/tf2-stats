@@ -25,6 +25,12 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 	database.Open()
 	models.Migrate()
+
+	log.Println("serving on :8080")
+	go func() {
+		log.Fatal(http.ListenAndServe(config.Address, nil))
+	}()
+
 	if *file != "" {
 		log.Printf("Reading logs from %s...", *file)
 		bytes, err := ioutil.ReadFile(*file)
@@ -33,20 +39,20 @@ func main() {
 		}
 
 		logs := strings.Split(string(bytes), "\n")
-		for _, idStr := range logs {
+		for _, idStr := range logs[:len(logs)-1] {
 			id, err := strconv.Atoi(idStr)
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Println(id)
-			err = models.AddStats(id, true)
-			if err != nil {
-				log.Fatalf("Error in adding %d: %v", id, err)
+			if !models.Exists(id) {
+				log.Println(id)
+				err = models.AddStats(id, true)
+				if err != nil {
+					log.Fatalf("Error in adding %d: %v", id, err)
+				}
 			}
 		}
 		log.Println("done!")
 	}
-
-	log.Println("serving on :8080")
-	log.Fatal(http.ListenAndServe(config.Address, nil))
+	select {}
 }
