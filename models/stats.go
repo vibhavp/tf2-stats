@@ -18,6 +18,10 @@ type Player struct {
 	SteamID string `sql:"not null;unique" json:"-"`
 }
 
+type AllClassStat struct {
+	ID            uint    `json:"-"`
+	DamagePerHeal float64 `json:"damage_per_heal"`
+}
 type Stat struct {
 	ID     uint `json:"-"`
 	LogsID uint `json:"-"`
@@ -85,14 +89,14 @@ func addPlayers(names map[string]string) {
 	}
 }
 
-func AddStats(id int, updateAvg bool) error {
-	logs, err := logstf.GetLogs(id)
+func AddStats(logsID int, updateAvg bool) error {
+	logs, err := logstf.GetLogs(logsID)
 	if err != nil {
 		return err
 	}
 
 	db.DB.Save(&Match{
-		LogsID: id,
+		LogsID: logsID,
 	})
 	addPlayers(logs.Names)
 	var ids []uint
@@ -119,7 +123,7 @@ func AddStats(id int, updateAvg bool) error {
 			min := float64(cstats.TotalTime) / 60.0 // minutes played
 			stat := &Stat{
 				Class:     cstats.Type,
-				LogsID:    id,
+				LogsID:    uint(logsID),
 				DPM:       float64(cstats.Damage) / min,
 				Kills:     cstats.Kills,
 				Deaths:    cstats.Deaths,
@@ -187,7 +191,14 @@ func GetPlayerStats(playerID uint) []Stat {
 	db.DB.Preload("Player").Where("player_id = ?", playerID).Order("logs_id").Find(&stats)
 	for i := 1; i < len(stats); i++ {
 		if stats[i].LogsID == stats[i-1].LogsID {
+			stats[i-1].Class += "+" + stats[i].Class
+			stats[i-1].DPM = (stats[i-1].DPM + stats[i].DPM) / 2.0
+			stats[i-1].Kills += stats[i].Kills
 			stats[i-1].Deaths += stats[i].Deaths
+			stats[i-1].KD += float64(stats[i-1].Kills) / float64(stats[i-1].Deaths)
+			stats[i-1].Drops += stats[i].Drops
+			stats[i-1].Airshots += stats[i].Airshots
+
 			stats = append(stats[:i], stats[i+1:]...)
 		}
 	}

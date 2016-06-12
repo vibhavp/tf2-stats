@@ -59,7 +59,10 @@ func getStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	e := json.NewEncoder(w)
-	e.Encode(models.GetClassStats(class))
+	e.Encode(map[string]interface{}{
+		"type": "class",
+		"data": models.GetClassStats(class),
+	})
 }
 
 func getPlayerStats(w http.ResponseWriter, r *http.Request) {
@@ -70,5 +73,8 @@ func getPlayerStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e := json.NewEncoder(w)
-	e.Encode(models.GetPlayerStats(uint(playerID)))
+	e.Encode(map[string]interface{}{
+		"type": "player",
+		"data": models.GetPlayerStats(uint(playerID)),
+	})
 }

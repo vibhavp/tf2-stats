@@ -10,7 +10,6 @@
       <input type="submit" value="Submit">
     </form>
     {{end}}
-
     <h1>Comparitive Class Statistics</h1>
     {{range $index, $element := .classes}}
     <a class="pure-button" href="/draw?class={{$index}}">{{$element}}</a>&nbsp;
