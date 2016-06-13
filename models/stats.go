@@ -19,8 +19,13 @@ type Player struct {
 }
 
 type AllClassStat struct {
-	ID            uint    `json:"-"`
+	ID     uint `json:"-"`
+	LogsID uint `json:"-"`
+
 	DamagePerHeal float64 `json:"damage_per_heal"`
+
+	PlayerID uint   `json:"-"`
+	Player   Player `gorm:"ForeignKey:PlayerID" json:"player"`
 }
 type Stat struct {
 	ID     uint `json:"-"`
@@ -59,6 +64,7 @@ func Migrate() {
 	db.DB.AutoMigrate(&Player{})
 	db.DB.AutoMigrate(&Stat{})
 	db.DB.AutoMigrate(&AvgStats{})
+	db.DB.AutoMigrate(&AllClassStat{})
 
 	db.DB.Model(&AvgStats{}).
 		AddUniqueIndex("idx_player_id_class", "player_id", "class")
@@ -105,6 +111,15 @@ func AddStats(logsID int, updateAvg bool) error {
 		id := getPlayerID(steamID)
 		ids = append(ids, id)
 
+		var dph float64
+		if float64(stats.HealsReceived) != 0 {
+			dph = float64(stats.Damage) / float64(stats.HealsReceived)
+		}
+		db.DB.Save(&AllClassStat{
+			LogsID:        uint(logsID),
+			DamagePerHeal: dph,
+			PlayerID:      id,
+		})
 		for _, cstats := range stats.ClassStats {
 			if cstats.TotalTime == 0 {
 				continue
@@ -210,4 +225,21 @@ func GetAllPlayers() []Player {
 	var players []Player
 	db.DB.Find(&players)
 	return players
+}
+
+func GetAllClassStats() []AllClassStat {
+	var stats []AllClassStat
+	players := GetAllPlayers()
+	for _, player := range players {
+		var stat AllClassStat
+		var playerID uint
+		db.DB.Model(&AllClassStat{}).
+			Select("AVG(damage_per_heal), player_id").
+			Where("player_id = ?", player.ID).Row().
+			Scan(&stat.DamagePerHeal, &playerID)
+		db.DB.First(&stat.Player, playerID)
+		stats = append(stats, stat)
+	}
+
+	return stats
 }

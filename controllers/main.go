@@ -49,13 +49,18 @@ func add(w http.ResponseWriter, r *http.Request) {
 }
 
 func getStats(w http.ResponseWriter, r *http.Request) {
-	class := r.URL.Query().Get("class")
+	query := r.URL.Query()
+	class := query.Get("class")
 	if class == "" {
-		if r.URL.Query().Get("playerid") != "" {
+		if query.Get("playerid") != "" {
 			getPlayerStats(w, r)
-			return
+		} else if query.Get("allclass") != "" {
+			getAllClassStats(w, r)
+		} else {
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "no params",
+			})
 		}
-		http.Error(w, "no class", http.StatusBadRequest)
 		return
 	}
 	e := json.NewEncoder(w)
@@ -76,5 +81,13 @@ func getPlayerStats(w http.ResponseWriter, r *http.Request) {
 	e.Encode(map[string]interface{}{
 		"type": "player",
 		"data": models.GetPlayerStats(uint(playerID)),
+	})
+}
+
+func getAllClassStats(w http.ResponseWriter, r *http.Request) {
+	e := json.NewEncoder(w)
+	e.Encode(map[string]interface{}{
+		"type": "allclass",
+		"data": models.GetAllClassStats(),
 	})
 }

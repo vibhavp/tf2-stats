@@ -1,41 +1,52 @@
 window.addEventListener('load', function () {
     'use strict';
+
+    var desc = {"dpm": "Damage Per Minute", "kills": "Kills", "kd": "K/D Ratio",
+		"airshots": "Airshots", "drops": "Drops",
+		"damage_per_heal": "Damage dealt per heal"};
+    var allStats = ["dpm", "kills", "kd", "airshots", "drops"];
+    var validStats = {
+	"scout": ["dpm", "kills", "kd"],
+	"soldier": ["dpm", "kills", "kd", "airshots"],
+	"demoman": ["dpm", "kills", "kd", "airshots"],
+	"medic": ["drops"],
+	"sniper": ["headshots", "kills"],
+	"spy": ["kills", "kd"],
+	"pyro": ["kills", "kd"],
+	"engineer": ["kills"],
+	"heavyweapons": ["dpm", "kills", "kd"],
+	"allclass": ["damage_per_heal"],
+    }
+
+    function isValidStat(stat, className){
+	return validStats[className].find(function(s) {return s === stat});
+    }
+
     function statsData(data, stat, label) {
 	var labels = [];
 	var dataset = [];
 	var i;
-        var classNames = {
-            "scout": "Scout",
-            "soldier": "Soldier",
-            "demoman": "Demoman",
-            "sniper": "Sniper",
-            "medic": "Medic",
-            "heavyweapons": "Heavy",
-            "spy": "Spy",
-            "pyro": "Pyro",
-            "engineer": "Engineer"
-        };
-
-	if (data.length == 0) {
-	    return null;
-	}
-
-	if (stat === "airshots" && !(data[0].class === "soldier" || data[0].class === "demoman")) {
-	    return null;
-	}
+	var zero;
 
 	data.sort(function(a, b) {
 	    return b[stat] - a[stat]
 	})
 
-        console.log("making bar graph")
-        console.log(stat);
-        
 	for (i in data) {
-	    labels.push(data[i].player.name);
-	    dataset.push(data[i][stat]);
-	};
+	    if (Math.floor(data[i][stat]) != 0) {
+		labels.push(data[i].player.name);
+		dataset.push(data[i][stat]);
+	    } else {
+		zero = true;
+	    }
+	}
+	if (zero) {
+	    labels.push("");
+	    dataset.push(0.0);
+	}
 
+	console.log(labels);
+	console.log(dataset);
 	return {
 	    type: 'horizontalBar',
 	    data: {
@@ -46,12 +57,6 @@ window.addEventListener('load', function () {
 		    backgroundColor: 'rgba(0, 91, 168, 1)',
 		}]
 	    },
-            options: {
-                title: {
-                    display: true,
-                    text: classNames[data[0].class],
-                }
-            }
 	};
     };
 
@@ -60,19 +65,8 @@ window.addEventListener('load', function () {
 	var dataset = [];
 	var i;
 
-	if (data.length == 0) {
-	    return null;
-	}
+	console.log(data);
 
-	if (stat === "airshots" && !(data[0].class === "soldier" || data[0].class === "demoman")) {
-	    return null;
-	}
-
-	if (stat === "drops" && !data[0].class === "medic") {
-	    return null;
-	}
-
-        console.log("making line graph")
 	for (i in data) {
 	    labels.push(i.toString());
 	    dataset.push(data[i][stat])
@@ -126,34 +120,37 @@ window.addEventListener('load', function () {
     var ctx = document.getElementById("chart");
     var prevtype;
 
-    function getChartData(data) {
-        var d;
-        var classes = ["scout", "soldier", "demoman", "medic"];
-	var stats = ["dpm", "kills", "kd", "airshots", "drops"];
-	var desc = {"dpm": "Damage Per Minute", "kills": "Kills", "kd": "K/D Ratio",
-		"airshots": "Airshots", "drops": "Drops"};
-
-        
-        if (data.type == "class") {
-            d = statsData(data.data, stats[index], desc[stats[index]]);
-        } else {
-            d = statsDataLine(data.data, stats[index], desc[stats[index]]);
-        }
-
-        function nextIndex(arr, index) {
+    function getGraphData(data) {
+	function nextIndex(arr, index) {
 	    if (index+1 === arr.length) {
 	        return 0;
 	    }
 	    return index + 1;
         };
 
+	var d;
 
-        index = nextIndex(stats, index);
-        return d
+	switch (data.type) {
+	case "class":
+	    var name = validStats[data.data[0].class][index];
+	    d = statsData(data.data, name, desc[name]);
+	    index = nextIndex(validStats[data.data[0].class], index);
+	    break;
+	case "player":
+	    d = statsDataLine(data.data, allStats[index], desc[allStats[index]])
+	    index = nextIndex(allStats, index);
+	    break;
+	case "allclass":
+	    var name = validStats["allclass"][index];
+	    d = statsData(data.data, name, desc[name]);
+	    index = nextIndex(validStats["allclass"], index);
+	}
+
+	return d;
     }
 
     function drawGraph(data) {
-        var c = getChartData(data);
+        var c = getGraphData(data);
 
         if (c == null) {
             drawGraph(data);
@@ -163,7 +160,6 @@ window.addEventListener('load', function () {
             chart = new Chart(ctx, c);
             chart.resize();
             prevtype = data.type;
-
             interval = setInterval(function() {
                 drawGraph(data);
             }, 10*1000)

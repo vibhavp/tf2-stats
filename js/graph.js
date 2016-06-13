@@ -2,7 +2,8 @@ window.addEventListener('load', function () {
     'use strict';
 
     var desc = {"dpm": "Damage Per Minute", "kills": "Kills", "kd": "K/D Ratio",
-		"airshots": "Airshots", "drops": "Drops"};
+		"airshots": "Airshots", "drops": "Drops",
+		"damage_per_heal": "Damage dealt per heal"};
     var allStats = ["dpm", "kills", "kd", "airshots", "drops"];
     var validStats = {
 	"scout": ["dpm", "kills", "kd"],
@@ -13,7 +14,8 @@ window.addEventListener('load', function () {
 	"spy": ["kills", "kd"],
 	"pyro": ["kills", "kd"],
 	"engineer": ["kills"],
-	"heavyweapons": ["dpm", "kills", "kd"]
+	"heavyweapons": ["dpm", "kills", "kd"],
+	"allclass": ["damage_per_heal"],
     }
 
     function isValidStat(stat, className){
@@ -103,13 +105,6 @@ window.addEventListener('load', function () {
 	}
     };
 
-    function nextIndex(arr, index) {
-	if (index+1 === arr.length) {
-	    return 0;
-	}
-	return index + 1;
-    };
-
     // http://stackoverflow.com/a/901144
     function getParam(name, url) {
 	if (!url) url = window.location.href;
@@ -132,7 +127,11 @@ window.addEventListener('load', function () {
     var param = "?class=" + getParam("class");
 
     if (getParam("class") == null) {
-	param = "?playerid=" + getParam("playerid");
+	if (getParam("playerid") != null) {
+	    param = "?playerid=" + getParam("playerid");
+	} else {
+	    param = "?allclass=true"
+	}
     }
 
     var index = 0;
@@ -147,13 +146,20 @@ window.addEventListener('load', function () {
 
 	var d;
 
-	if (data.type === "class") {
+	switch (data.type) {
+	case "class":
 	    var name = validStats[data.data[0].class][index];
 	    d = statsData(data.data, name, desc[name]);
 	    index = nextIndex(validStats[data.data[0].class], index);
-	} else { // "player"
+	    break;
+	case "player":
 	    d = statsDataLine(data.data, allStats[index], desc[allStats[index]])
 	    index = nextIndex(allStats, index);
+	    break;
+	case "allclass":
+	    var name = validStats["allclass"][index];
+	    d = statsData(data.data, name, desc[name]);
+	    index = nextIndex(validStats["allclass"], index);	    
 	}
 
 	return d;
