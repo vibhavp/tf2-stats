@@ -2,6 +2,7 @@ package models
 
 import (
 	"log"
+	"sync"
 
 	"github.com/TF2Stadium/logstf"
 	db "github.com/vibhavp/tf2-stats/database"
@@ -107,6 +108,8 @@ func AddStats(logsID int, updateAvg bool) error {
 	addPlayers(logs.Names)
 	var ids []uint
 
+	wait := new(sync.WaitGroup)
+
 	for steamID, stats := range logs.Players {
 		id := getPlayerID(steamID)
 		ids = append(ids, id)
@@ -115,11 +118,15 @@ func AddStats(logsID int, updateAvg bool) error {
 		if float64(stats.HealsReceived) != 0 {
 			dph = float64(stats.Damage) / float64(stats.HealsReceived)
 		}
-		db.DB.Save(&AllClassStat{
-			LogsID:        uint(logsID),
-			DamagePerHeal: dph,
-			PlayerID:      id,
-		})
+		wait.Add(1)
+		go func() {
+			db.DB.Save(&AllClassStat{
+				LogsID:        uint(logsID),
+				DamagePerHeal: dph,
+				PlayerID:      id,
+			})
+			wait.Done()
+		}()
 		for _, cstats := range stats.ClassStats {
 			if cstats.TotalTime == 0 {
 				continue
@@ -150,10 +157,15 @@ func AddStats(logsID int, updateAvg bool) error {
 			if cstats.Type == "soldier" || cstats.Type == "demoman" {
 				stat.Airshots = stats.Airshots
 			}
-			db.DB.Save(stat)
+			wait.Add(1)
+			go func() {
+				db.DB.Save(stat)
+				wait.Done()
+			}()
 		}
 	}
 
+	wait.Wait()
 	if updateAvg {
 		UpdateAvgStats(ids)
 	}
