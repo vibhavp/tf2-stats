@@ -1,0 +1,25 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "yM4hC/nPBuBBx5HLfEv48OokQ/Q=",
+			"path": "github.com/TF2Stadium/logstf",
+			"revision": "8651db6d1b6222b5494b6f94ae0fbd9c0189aafe",
+			"revisionTime": "2016-06-11T17:57:09Z"
+		},
+		{
+			"checksumSHA1": "EWU9Us+zYiAx4Rs6GujFf9bmW0I=",
+			"path": "github.com/jinzhu/gorm",
+			"revision": "5174cc5c242a728b435ea2be8a2f7f998e15429b",
+			"revisionTime": "2016-04-04T14:49:18Z"
+		},
+		{
+			"checksumSHA1": "VuVLWp/odRFZhOzG7LNCRkrbLQM=",
+			"path": "github.com/kelseyhightower/envconfig",
+			"revision": "cea086319492c3940683ea5e122aa5de70a33923",
+			"revisionTime": "2016-03-16T19:37:06Z"
+		}
+	],
+	"rootPath": "github.com/vibhavp/tf2-stats"
+}

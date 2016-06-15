@@ -22,7 +22,6 @@ window.addEventListener('load', function () {
 	return validStats[className].find(function(s) {return s === stat});
     }
 
-    
     function statsData(data, stat, label) {
 	var labels = [];
 	var dataset = [];
