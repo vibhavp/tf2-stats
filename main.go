@@ -26,7 +26,7 @@ func main() {
 	database.Open()
 	models.Migrate()
 
-	log.Println("serving on :8080")
+	log.Printf("serving on %s", config.Address)
 	go func() {
 		log.Fatal(http.ListenAndServe(config.Address, nil))
 	}()
