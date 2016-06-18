@@ -16,7 +16,6 @@
     {{end}}
 
     <h1>Individual player stats</h1>
-    A bit messy but still works who cares<br>
 
     {{range $index, $element := .players}}
     <a class="pure-button" href="/draw?playerid={{$element.ID}}">{{$element.Name}}</a>&nbsp;
