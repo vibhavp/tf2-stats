@@ -19,10 +19,13 @@ var config = struct {
 	Address string `envconfig:"ADDRESS" default:":8080"`
 }{}
 
-func main() {
+func init() {
+	log.SetFlags(log.Lshortfile)
 	flag.Parse()
 	envconfig.MustProcess("", &config)
-	log.SetFlags(log.Lshortfile)
+}
+
+func main() {
 	database.Open()
 	models.Migrate()
 

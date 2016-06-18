@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ var config = struct {
 
 func init() {
 	envconfig.MustProcess("", &config)
+	log.Printf("username: %s, password %s", config.Username, config.Password)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
